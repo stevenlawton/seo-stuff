@@ -1,24 +1,28 @@
 package improvementchain
 
-import "sea-stuff/models"
+import (
+	"sea-stuff/models"
+)
 
-// ImageAltTextHandler checks if images have alt attributes
+// ImageAltTextHandler checks if all images have meaningful alt text
 type ImageAltTextHandler struct {
 	next Handler
 }
 
+// SetNext sets the next handler in the chain
 func (h *ImageAltTextHandler) SetNext(handler Handler) {
 	h.next = handler
 }
 
+// Handle checks if each image has an alt text and suggests improvements if not
 func (h *ImageAltTextHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
-	for _, img := range page.Images {
-		if img.Alt == "" {
+	for _, image := range page.Images {
+		if image.Alt == "" {
 			*improvements = append(*improvements, models.Improvement{
-				Name:     "Missing Alt Attribute",
-				Field:    "Images.alt",
-				OldValue: "No alt attribute for image: " + img.Src,
-				NewValue: "Add a descriptive alt attribute for accessibility and SEO",
+				Name:     "Missing Alt Text",
+				Field:    "Image",
+				OldValue: image.Src,
+				NewValue: "Add descriptive alt text for this image",
 				Status:   "pending",
 			})
 		}

@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"net/http"
+	"os"
 	"sea-stuff/improvementchain"
 	"sea-stuff/models"
 	"sea-stuff/utils"
@@ -79,6 +80,17 @@ func HandleRunScanners(w http.ResponseWriter, r *http.Request) {
 	metaRobotsHandler := &improvementchain.MetaRobotsHandler{}
 	pageLoadTimeHandler := &improvementchain.PageLoadTimeHandler{}
 	canonicalURLHandler := &improvementchain.CanonicalURLHandler{}
+	internalLinkDepthHandler := &improvementchain.InternalLinkDepthHandler{}
+	mobileFriendlinessHandler := &improvementchain.MobileFriendlinessHandler{}
+	imageSizeOptimisationHandler := &improvementchain.ImageSizeOptimisationHandler{}
+	keywordDensityHandler := &improvementchain.KeywordDensityHandler{}
+	breadcrumbValidationHandler := &improvementchain.BreadcrumbValidationHandler{}
+	externalScriptEvaluationHandler := &improvementchain.ExternalScriptEvaluationHandler{}
+	structuredDataValidationHandler := &improvementchain.StructuredDataValidationHandler{}
+	contentReadabilityHandler := &improvementchain.ContentReadabilityHandler{}
+	externalLinkQualityHandler := improvementchain.NewExternalLinkQualityHandler(os.Getenv("VIRUS_TOTAL_API_KEY"))
+	socialMetaTagsHandler := &improvementchain.SocialMetaTagsHandler{}
+	brokenLinkCheckerHandler := &improvementchain.BrokenLinkCheckerHandler{}
 
 	// Set up the chain
 	titleHandler.SetNext(metaDescriptionHandler)
@@ -87,6 +99,20 @@ func HandleRunScanners(w http.ResponseWriter, r *http.Request) {
 	imageAltTextHandler.SetNext(metaRobotsHandler)
 	metaRobotsHandler.SetNext(pageLoadTimeHandler)
 	pageLoadTimeHandler.SetNext(canonicalURLHandler)
+	canonicalURLHandler.SetNext(internalLinkDepthHandler)
+	internalLinkDepthHandler.SetNext(mobileFriendlinessHandler)
+	mobileFriendlinessHandler.SetNext(imageSizeOptimisationHandler)
+	imageSizeOptimisationHandler.SetNext(keywordDensityHandler)
+	keywordDensityHandler.SetNext(breadcrumbValidationHandler)
+	breadcrumbValidationHandler.SetNext(externalScriptEvaluationHandler)
+	externalScriptEvaluationHandler.SetNext(structuredDataValidationHandler)
+	structuredDataValidationHandler.SetNext(contentReadabilityHandler)
+	contentReadabilityHandler.SetNext(externalLinkQualityHandler)
+	externalLinkQualityHandler.SetNext(socialMetaTagsHandler)
+	socialMetaTagsHandler.SetNext(brokenLinkCheckerHandler)
+
+	// Execute the chain
+	titleHandler.Handle(&page, &improvements)
 
 	// Execute the chain
 	titleHandler.Handle(&page, &improvements)
