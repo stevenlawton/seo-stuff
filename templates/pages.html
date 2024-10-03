@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Page List</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+<h1>List of Pages</h1>
+<form method="get" action="/pages">
+    <label for="extractid">Filter by Extract ID:</label>
+    <select name="extractid" id="extractid" onchange="this.form.submit()">
+        <option value="">-- Select Extract ID --</option>
+        {{range .ExtractIDs}}
+        <option value="{{.}}" {{if eq $.SelectedExtractID .}}selected{{end}}>{{.}}</option>
+        {{end}}
+    </select>
+</form>
+
+    <!-- Form to delete entries by extract ID -->
+    <form method="post" action="/delete_by_extract_id" style="margin-top: 20px;">
+        <input type="hidden" name="extractid" value="{{.SelectedExtractID}}">
+        <button type="submit" {{if eq .SelectedExtractID ""}}disabled{{end}}>Delete All Entries for Extract ID</button>
+    </form>
+
+<table>
+    <thead>
+    <tr>
+        <th>Page</th>
+        <th>Title</th>
+        <th>Improvement Count</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{range .Pages}}
+    <tr>
+        <td><a href="/pages/{{.SyntheticKey}}" target="_blank">{{.URL}}</a></td>
+        <td>{{.Title}}</td>
+        <td>{{if .Improvements}}{{len .Improvements}}{{else}}0{{end}}</td>
+        <td>
+            <button onclick="runScanners('{{.ExtractID}}')">Run Scanners</button>
+            <button onclick="viewSuggestions('{{.ExtractID}}')">View Suggestions</button>
+        </td>
+    </tr>
+    {{end}}
+    </tbody>
+</table>
+
+<script>
+    function runScanners(extractId) {
+        alert('Running scanners for Extract ID: ' + extractId);
+        // Implementation for running scanners
+    }
+
+    function viewSuggestions(extractId) {
+        alert('Viewing suggestions for Extract ID: ' + extractId);
+        // Implementation for viewing suggestions
+    }
+</script>
+</body>
+</html>

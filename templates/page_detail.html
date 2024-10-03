@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Page Details</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+<h1>Details for Page: {{.URL}}</h1>
+<table>
+    <tr>
+        <th>Title</th>
+        <td>{{.Title}}</td>
+    </tr>
+    <tr>
+        <th>Meta Description</th>
+        <td>{{.MetaDescription}}</td>
+    </tr>
+    <tr>
+        <th>Canonical URL</th>
+        <td>{{.CanonicalURL}}</td>
+    </tr>
+    <tr>
+        <th>Word Count</th>
+        <td>{{.WordCount}}</td>
+    </tr>
+    <tr>
+        <th>Page Load Time (seconds)</th>
+        <td>{{.PageLoadTimeSeconds}}</td>
+    </tr>
+    <tr>
+        <th>H1 Tags</th>
+        <td>{{range .HTags.h1}}{{.}}<br>{{end}}</td>
+    </tr>
+    <tr>
+        <th>Internal Links</th>
+        <td>{{range .InternalLinks}}<a href="{{.}}" target="_blank">{{.}}</a><br>{{end}}</td>
+    </tr>
+    <tr>
+        <th>External Links</th>
+        <td>{{range .ExternalLinks}}<a href="{{.}}" target="_blank">{{.}}</a><br>{{end}}</td>
+    </tr>
+    <tr>
+        <th>Improvements</th>
+        <td>
+            {{range .Improvements}}
+            <p>
+                <strong>{{.Name}}:</strong><br>
+                Field: {{.Field}}<br>
+                Old Value: {{.OldValue}}<br>
+                New Value: {{.NewValue}}<br>
+                Status: {{.Status}}
+            </p>
+            {{end}}
+        </td>
+    </tr>
+</table>
+<br>
+<a href="/pages">Back to Pages List</a>
+</body>
+</html>
