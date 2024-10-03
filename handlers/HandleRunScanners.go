@@ -71,11 +71,24 @@ func HandleRunScanners(w http.ResponseWriter, r *http.Request) {
 
 	// Create and execute the improvement chain
 	improvements := []models.Improvement{}
+
 	titleHandler := &improvementchain.TitleLengthHandler{}
 	metaDescriptionHandler := &improvementchain.MetaDescriptionHandler{}
+	h1TagCountHandler := &improvementchain.H1TagCountHandler{}
+	imageAltTextHandler := &improvementchain.ImageAltTextHandler{}
+	metaRobotsHandler := &improvementchain.MetaRobotsHandler{}
+	pageLoadTimeHandler := &improvementchain.PageLoadTimeHandler{}
+	canonicalURLHandler := &improvementchain.CanonicalURLHandler{}
 
 	// Set up the chain
 	titleHandler.SetNext(metaDescriptionHandler)
+	metaDescriptionHandler.SetNext(h1TagCountHandler)
+	h1TagCountHandler.SetNext(imageAltTextHandler)
+	imageAltTextHandler.SetNext(metaRobotsHandler)
+	metaRobotsHandler.SetNext(pageLoadTimeHandler)
+	pageLoadTimeHandler.SetNext(canonicalURLHandler)
+
+	// Execute the chain
 	titleHandler.Handle(&page, &improvements)
 
 	// Update the MongoDB document with the generated improvements
