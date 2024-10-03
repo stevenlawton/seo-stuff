@@ -31,6 +31,7 @@ func main() {
 	http.HandleFunc("/pages", handlers.HandleListPages)
 	http.HandleFunc("/pages/", handlers.HandlePageDetails)
 	http.HandleFunc("/delete_by_extract_id", handlers.HandleDeleteByExtractID)
+	http.HandleFunc("/run_scanners", handlers.HandleRunScanners)
 
 	log.Println("Server started at :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))

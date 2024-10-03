@@ -10,6 +10,8 @@
 
 <body class="container my-5">
 <h1 class="mb-4">List of Pages</h1>
+
+<!-- Form to filter by Extract ID -->
 <form method="get" action="/pages" class="form-inline mb-3">
     <label for="extractId" class="mr-2">Filter by Extract ID:</label>
     <select name="extractId" id="extractId" class="form-control mr-2" onchange="this.form.submit()">
@@ -26,6 +28,7 @@
     <button type="submit" class="btn btn-danger" {{if eq .SelectedExtractID ""}}disabled{{end}}>Delete All Entries for Extract ID</button>
 </form>
 
+<!-- Table displaying the pages -->
 <table class="table table-bordered table-hover">
     <thead class="thead-dark">
     <tr>
@@ -42,28 +45,61 @@
         <td>{{.Title}}</td>
         <td>{{if .Improvements}}{{len .Improvements}}{{else}}0{{end}}</td>
         <td>
-            <button class="btn btn-info btn-sm" onclick="runScanners('{{.ExtractID}}')">Run Scanners</button>
-            <button class="btn btn-secondary btn-sm" onclick="viewSuggestions('{{.ExtractID}}')">View Suggestions</button>
+            <button class="btn btn-info btn-sm" onclick="runScanners('{{.SyntheticKey}}')">Run Scanners</button>
+            <button class="btn btn-secondary btn-sm" onclick="viewSuggestions('{{.SyntheticKey}}')">View Suggestions</button>
         </td>
     </tr>
     {{end}}
     </tbody>
 </table>
 
+<!-- JavaScript functions -->
 <script>
-    function runScanners(extractId) {
-        alert('Running scanners for Extract ID: ' + extractId);
-        // Implementation for running scanners
+    function runScanners(SyntheticKey) {
+
+    // Create the request body with the correct extractId and page URL (synthetic key)
+        const requestBody = {
+            SyntheticKey: SyntheticKey,
+        };
+
+        // Send the POST request to the server
+        fetch('/run_scanners', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    let improvements = data.map(imp => `<li>${imp.name}: ${imp.field} - Suggested change from "${imp.old_value}" to "${imp.new_value}"</li>`).join('');
+                    alert("Improvements:\n" + improvements);
+                } else {
+                    alert("No improvements found.");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Failed to run scanners: " + error.message);
+            });
     }
 
-    function viewSuggestions(extractId) {
-        alert('Viewing suggestions for Extract ID: ' + extractId);
-        // Implementation for viewing suggestions
+    function viewSuggestions(syntheticKey) {
+        alert('Viewing suggestions for Synthetic Key: ' + syntheticKey);
+        // Implementation for viewing suggestions can be added here
     }
+
 </script>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Including Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-LtrjvnR4/JmcD8jXx1phelPZC6B83ib1iPQIukV7mV9t4l59Htx5C56Fzpa0LOkR" crossorigin="anonymous"></script>
 </body>
 
 </html>

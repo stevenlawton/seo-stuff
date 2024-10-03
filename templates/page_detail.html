@@ -10,6 +10,23 @@
 <div class="container mt-5">
     <h1 class="mb-4">Details for Page: {{.Title}}</h1>
 
+    <!-- Improvements Section -->
+    <h2>Improvements</h2>
+    {{if .Improvements}}
+    <ul class="list-group mb-4">
+        {{range .Improvements}}
+        <li class="list-group-item">
+            <strong>{{.Name}}</strong> (Field: {{.Field}})
+            <br>Old Value: "{{.OldValue}}"
+            <br>New Value: "{{.NewValue}}"
+            <br>Status: {{.Status}}
+        </li>
+        {{end}}
+    </ul>
+    {{else}}
+    <p>No improvements suggested for this page.</p>
+    {{end}}
+
     <h2>General Information</h2>
     <table class="table table-striped">
         <tr>
