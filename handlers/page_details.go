@@ -21,7 +21,7 @@ func HandlePageDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse the synthetic key to get extractid and URL
+	// Parse the synthetic key to get extract_id and URL
 	extractID, url, err := utils.ParseKey(syntheticKey)
 	if err != nil {
 		http.Error(w, "Invalid page key", http.StatusBadRequest)
@@ -29,16 +29,16 @@ func HandlePageDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Log the parsed values for debugging
-	log.Printf("Parsed extractID: %s, URL: %s", extractID, url)
+	log.Printf("Parsed extractId: %s, URL: %s", extractID, url)
 
 	// Connect to the MongoDB collection
 	collection := client.Database("brandAdherence").Collection("analysis")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Fetch the page document by extractid and url
+	// Fetch the page document by extractId and url
 	var page models.AnalysisData
-	err = collection.FindOne(ctx, bson.M{"extractid": extractID, "url": url}).Decode(&page)
+	err = collection.FindOne(ctx, bson.M{"extractId": extractID, "url": url}).Decode(&page)
 	if err != nil {
 		log.Printf("Error fetching page details from the database: %v", err)
 		http.Error(w, "Error fetching page details from the database", http.StatusInternalServerError)

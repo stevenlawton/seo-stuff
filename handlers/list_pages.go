@@ -22,26 +22,26 @@ func HandleListPages(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Fetch distinct extractid values for the dropdown
-	log.Println("Attempting to fetch distinct extractids...")
-	extractIDs, err := collection.Distinct(ctx, "extractid", bson.M{})
+	// Fetch distinct extractId values for the dropdown
+	log.Println("Attempting to fetch distinct extractId...")
+	extractIDs, err := collection.Distinct(ctx, "extractId", bson.M{})
 	if err != nil {
-		log.Printf("Error fetching distinct extractids: %v", err)
-		http.Error(w, "Error fetching distinct extractids", http.StatusInternalServerError)
+		log.Printf("Error fetching distinct extractIds: %v", err)
+		http.Error(w, "Error fetching distinct extractIds", http.StatusInternalServerError)
 		return
 	}
 
 	if len(extractIDs) == 0 {
-		log.Println("No extractids found in the collection. Possible reasons could be no documents or incorrect field name.")
+		log.Println("No extractIds found in the collection. Possible reasons could be no documents or incorrect field name.")
 	} else {
 		log.Printf("Extracted IDs: %v", extractIDs)
 	}
 
 	// Prepare the filter based on query parameter
 	filter := bson.M{}
-	selectedExtractID := r.URL.Query().Get("extractid")
+	selectedExtractID := r.URL.Query().Get("extractId")
 	if selectedExtractID != "" {
-		filter = bson.M{"extractid": selectedExtractID}
+		filter = bson.M{"extractId": selectedExtractID}
 	}
 
 	// Fetch filtered pages from MongoDB
@@ -60,10 +60,10 @@ func HandleListPages(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error decoding data from the database", http.StatusInternalServerError)
 			return
 		}
-		// Ensure that extractid is correctly passed to GenerateKey
+		// Ensure that extractId is correctly passed to GenerateKey
 		syntheticKey := utils.GenerateKey(page.ExtractID, page.URL)
 		if page.ExtractID == "" {
-			log.Printf("Warning: ExtractID is empty for page URL: %s", page.URL)
+			log.Printf("Warning: extractId is empty for page URL: %s", page.URL)
 		}
 		pages = append(pages, PageWithKey{
 			AnalysisData: page,

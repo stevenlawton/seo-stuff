@@ -1,67 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Details</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Page Details - {{.Title}}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
+<body>
+<div class="container mt-5">
+    <h1 class="mb-4">Details for Page: {{.Title}}</h1>
 
-<body class="container my-5">
-<h1 class="mb-4">Details for Page: {{.URL}}</h1>
-<table class="table table-bordered">
-    <tr>
-        <th>Title</th>
-        <td>{{.Title}}</td>
-    </tr>
-    <tr>
-        <th>Meta Description</th>
-        <td>{{.MetaDescription}}</td>
-    </tr>
-    <tr>
-        <th>Canonical URL</th>
-        <td>{{.CanonicalURL}}</td>
-    </tr>
-    <tr>
-        <th>Word Count</th>
-        <td>{{.WordCount}}</td>
-    </tr>
-    <tr>
-        <th>Page Load Time (seconds)</th>
-        <td>{{.PageLoadTimeSeconds}}</td>
-    </tr>
-    <tr>
-        <th>H1 Tags</th>
-        <td>{{range .HTags.h1}}{{.}}<br>{{end}}</td>
-    </tr>
-    <tr>
-        <th>Internal Links</th>
-        <td>{{range .InternalLinks}}<a href="{{.}}" target="_blank">{{.}}</a><br>{{end}}</td>
-    </tr>
-    <tr>
-        <th>External Links</th>
-        <td>{{range .ExternalLinks}}<a href="{{.}}" target="_blank">{{.}}</a><br>{{end}}</td>
-    </tr>
-    <tr>
-        <th>Improvements</th>
-        <td>
-            {{range .Improvements}}
-            <div class="border p-2 mb-2">
-                <strong>{{.Name}}:</strong><br>
-                <strong>Field:</strong> {{.Field}}<br>
-                <strong>Old Value:</strong> {{.OldValue}}<br>
-                <strong>New Value:</strong> {{.NewValue}}<br>
-                <strong>Status:</strong> {{.Status}}
-            </div>
-            {{end}}
-        </td>
-    </tr>
-</table>
-<a href="/pages" class="btn btn-primary mt-3">Back to Pages List</a>
-</body>
+    <h2>General Information</h2>
+    <table class="table table-striped">
+        <tr>
+            <th>URL</th>
+            <td><a href="{{.URL}}" target="_blank">{{.URL}}</a></td>
+        </tr>
+        <tr>
+            <th>Title</th>
+            <td>{{.Title}}</td>
+        </tr>
+        <tr>
+            <th>Meta Description</th>
+            <td>{{.MetaDescription}}</td>
+        </tr>
+        <tr>
+            <th>Canonical URL</th>
+            <td>{{.CanonicalURL}}</td>
+        </tr>
+        <tr>
+            <th>Is Canonical Correct?</th>
+            <td>{{.IsCanonicalCorrect}}</td>
+        </tr>
+        <tr>
+            <th>Word Count</th>
+            <td>{{.WordCount}}</td>
+        </tr>
+        <tr>
+            <th>Page Load Time (seconds)</th>
+            <td>{{.PageLoadTimeSeconds}}</td>
+        </tr>
+        <tr>
+            <th>Page Size (bytes)</th>
+            <td>{{.PageSizeBytes}}</td>
+        </tr>
+        <tr>
+            <th>Language</th>
+            <td>{{.Language}}</td>
+        </tr>
+    </table>
+
+    <h2>SEO Information</h2>
+    <table class="table table-striped">
+        <tr>
+            <th>Meta Tags</th>
+            <td>
+                <pre>{{.MetaTags}}</pre>
+            </td>
+        </tr>
+        <tr>
+            <th>Robots Meta Tag</th>
+            <td>{{.RobotsMetaTag}}</td>
+        </tr>
+        <tr>
+            <th>Common Words</th>
+            <td>
+                <ul>
+                    {{range .CommonWords}}
+                    <li>{{index . 0}}: {{index . 1}}</li>
+                    {{end}}
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <th>Social Tags</th>
+            <td>
+                <pre>{{.SocialTags}}</pre>
+            </td>
+        </tr>
+        <tr>
+            <th>Hreflangs</th>
+            <td>{{range .Hreflangs}}<span>{{.}}</span><br>{{end}}</td>
+        </tr>
+    </table>
+
+    <h2>Header Tags</h2>
+    <table class="table table-striped">
+        <tr>
+            <th>H1 Tags</th>
+            <td>{{range .HTags.h1}}<span>{{.}}</span><br>{{end}}</td>
+        </tr>
+        <tr>
+            <th>H2 Tags</th>
+            <td>{{range .HTags.h2}}<span>{{.}}</span><br>{{end}}</td>
+        </tr>
+        <tr>
+            <th>H3 Tags</th>
+            <td>{{range .HTags.h3}}<span>{{.}}</span><br>{{end}}</td>
+        </tr>
+    </table>
+
+    <h2>Links</h2>
+    <table class="table table-striped">
+        <tr>
+            <th>Internal Links</th>
+            <td>
+                <ul>
+                    {{range .InternalLinks}}
+                    <li><a href="{{.}}" target="_blank">{{.}}</a></li>
+                    {{end}}
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <th>Internal Links with Anchor Text</th>
+            <td>
+                <ul>
+                    {{range .InternalLinksWithText}}
+                    <li><a href="{{.Href}}" target="_blank">{{.Href}}</a> - {{.AnchorText}}</li>
+                    {{end}}
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <th>External Links</th>
+            <td>
+                <ul>
+                    {{range .ExternalLinks}}
+                    <li><a href="{{.}}" target="_blank">{{.}}</a></li>
+                    {{end}}
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <h2>Images</h2>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Image</th>
+            <th>Alt Text</th>
+            <th>Width</th>
+            <th>Height</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range .Images}}
+        <tr>
+            <td><img src="{{.Src}}" alt="{{.Alt}}" width="100"></td>
+            <td>{{.Alt}}</td>
+            <td>{{.Width}}</td>
+            <td>{{.Height}}</td>
+        </tr>
+        {{end}}
+        </tbody>
+    </table>
+
+    <h2>Structured Data</h2>
+    <table class="table table-striped">
+        <tr>
+            <th>Structured Data Types</th>
+            <td>{{range .StructuredDataTypes}}<span>{{.}}</span><br>{{end}}</td>
+        </tr>
+        <tr>
+            <th>Structured Data</th>
+            <td>
+                <pre>{{range .StructuredData}}{{.}}<br>{{end}}</pre>
+            </td>
+        </tr>
+    </table>
+
+    <h2>External Resources</h2>
+    <table class="table table-striped">
+        <tr>
+            <th>External Scripts</th>
+            <td>{{range .ExternalScripts}}<span>{{.}}</span><br>{{end}}</td>
+        </tr>
+        <tr>
+            <th>External Stylesheets</th>
+            <td>{{range .ExternalStylesheets}}<span>{{.}}</span><br>{{end}}</td>
+        </tr>
+    </table>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
 </html>

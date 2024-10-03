@@ -14,8 +14,8 @@ func HandleDeleteByExtractID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract the extractid from the form data
-	extractID := r.FormValue("extractid")
+	// Extract the extractId from the form data
+	extractID := r.FormValue("extractId")
 	if extractID == "" {
 		http.Error(w, "Missing extract ID", http.StatusBadRequest)
 		return
@@ -27,7 +27,7 @@ func HandleDeleteByExtractID(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	// Delete all documents with the given extract ID
-	_, err := collection.DeleteMany(ctx, bson.M{"extractid": extractID})
+	_, err := collection.DeleteMany(ctx, bson.M{"extractId": extractID})
 	if err != nil {
 		http.Error(w, "Error deleting documents from the database", http.StatusInternalServerError)
 		return

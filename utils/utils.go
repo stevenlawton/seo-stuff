@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// GenerateKey generates a synthetic key based on extractid and URL
+// GenerateKey generates a synthetic key based on extractId and URL
 func GenerateKey(extractID, url string) string {
 	combined := extractID + "|" + url
 	encoded := base64.URLEncoding.EncodeToString([]byte(combined))
@@ -14,7 +14,7 @@ func GenerateKey(extractID, url string) string {
 	return encoded
 }
 
-// ParseKey parses the synthetic key back into extractid and URL
+// ParseKey parses the synthetic key back into extractId and URL
 func ParseKey(key string) (string, string, error) {
 	decoded, err := base64.URLEncoding.DecodeString(key)
 	if err != nil {

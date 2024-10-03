@@ -11,8 +11,8 @@
 <body class="container my-5">
 <h1 class="mb-4">List of Pages</h1>
 <form method="get" action="/pages" class="form-inline mb-3">
-    <label for="extractid" class="mr-2">Filter by Extract ID:</label>
-    <select name="extractid" id="extractid" class="form-control mr-2" onchange="this.form.submit()">
+    <label for="extractId" class="mr-2">Filter by Extract ID:</label>
+    <select name="extractId" id="extractId" class="form-control mr-2" onchange="this.form.submit()">
         <option value="">-- Select Extract ID --</option>
         {{range .ExtractIDs}}
         <option value="{{.}}" {{if eq $.SelectedExtractID .}}selected{{end}}>{{.}}</option>
@@ -22,7 +22,7 @@
 
 <!-- Form to delete entries by extract ID -->
 <form method="post" action="/delete_by_extract_id" class="mb-4">
-    <input type="hidden" name="extractid" value="{{.SelectedExtractID}}">
+    <input type="hidden" name="extractId" value="{{.SelectedExtractID}}">
     <button type="submit" class="btn btn-danger" {{if eq .SelectedExtractID ""}}disabled{{end}}>Delete All Entries for Extract ID</button>
 </form>
 
