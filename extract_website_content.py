@@ -109,9 +109,8 @@ while to_visit:
     # Calculate word count
     word_count = len(body.split())
 
-    # Extract images and their alt attributes
-    images = soup.find_all('img')
-    images_info = [{'src': img.get('src'), 'alt': img.get('alt', 'No alt attribute')} for img in images]
+    # Extract images and their alt attributes (but do not scan the files)
+    images = [{'src': img.get('src'), 'alt': img.get('alt', 'No alt attribute')} for img in soup.find_all('img')]
 
     # Extract internal and external links
     internal_links = []
@@ -164,7 +163,7 @@ while to_visit:
         'H1 Tag Count': h1_count,
         'Word Count': word_count,
         'Page Load Time (seconds)': round(load_time, 2),
-        'Images': images_info,
+        'Images': images,  # Including image src and alt attributes only
         'Internal Links': internal_links,
         'External Links': external_links,
         'Broken Links': broken_links,
