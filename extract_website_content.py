@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 import time
 import json
 import uuid
+import logging
 
 # Replace with your sitemap URL
 sitemap_url = 'https://stevenlawton.com/sitemap.xml'
@@ -20,14 +21,15 @@ extract_id = str(uuid.uuid4())
 visited = set()
 to_visit = []
 
-output_data = []
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Function to parse sitemap and extract URLs
 def extract_urls_from_sitemap(sitemap_url):
     try:
-        response = requests.get(sitemap_url)
+        response = requests.get(sitemap_url, timeout=10)
         if response.status_code != 200:
-            print(f'Failed to fetch sitemap: {response.status_code}', file=sys.stderr)
+            logging.error(f'Failed to fetch sitemap: {response.status_code}')
             return []
         sitemap_content = response.content
         root = ET.fromstring(sitemap_content)
@@ -44,7 +46,7 @@ def extract_urls_from_sitemap(sitemap_url):
 
         return urls
     except requests.exceptions.RequestException as e:
-        print(f'Failed to fetch sitemap: {e}', file=sys.stderr)
+        logging.error(f'Failed to fetch sitemap: {e}')
         return []
 
 # Function to check if a tag is visible
@@ -55,10 +57,19 @@ def tag_visible(element):
         return False
     return True
 
+# Function to determine if a link is an HTML page
+def is_html_page(url):
+    excluded_extensions = ('.js', '.css', '.jpg', '.jpeg', '.png', '.gif', '.pdf', '.zip', '.rar', '.mp4', '.mp3')
+    return not url.lower().endswith(excluded_extensions)
+
 # Extract URLs from the sitemap
+logging.info("Extracting URLs from sitemap...")
 to_visit = extract_urls_from_sitemap(sitemap_url)
+total_urls = len(to_visit)
+logging.info(f"Found {total_urls} URLs to process.\n")
 
 # Process each URL
+current_index = 0
 while to_visit:
     url = to_visit.pop(0)
     if url in visited:
@@ -66,17 +77,20 @@ while to_visit:
     visited.add(url)
 
     # Measure page load time
+    logging.info(f"Processing URL {current_index + 1}/{total_urls}: {url}")
+    current_index += 1
     start_time = time.time()
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
     except requests.exceptions.RequestException as e:
-        print(f'Failed to fetch {url}: {e}', file=sys.stderr)
+        logging.error(f'Failed to fetch {url}: {e}')
         continue
     load_time = time.time() - start_time
 
     if response.status_code != 200:
-        print(f'Non-200 response for {url}: {response.status_code}', file=sys.stderr)
+        logging.warning(f'Non-200 response for {url}: {response.status_code}')
         continue
+
     soup = BeautifulSoup(response.content, 'html.parser')
 
     # Extract page title
@@ -112,22 +126,28 @@ while to_visit:
     # Extract images and their alt attributes (but do not scan the files)
     images = [{'src': img.get('src'), 'alt': img.get('alt', 'No alt attribute')} for img in soup.find_all('img')]
 
-    # Extract internal and external links
+    # Extract internal and external links, and add new internal links to 'to_visit'
     internal_links = []
     external_links = []
+    domain = urlparse(sitemap_url).netloc
+
     for link in soup.find_all('a', href=True):
         href = link['href']
         full_url = urljoin(url, href)
-        if urlparse(full_url).netloc == urlparse(sitemap_url).netloc:
+        link_netloc = urlparse(full_url).netloc
+
+        if link_netloc == domain and is_html_page(full_url):
             internal_links.append(full_url)
-        else:
+            if full_url not in visited and full_url not in to_visit:
+                to_visit.append(full_url)
+        elif link_netloc != domain:
             external_links.append(full_url)
 
     # Check for broken links
     broken_links = []
     for link in internal_links + external_links:
         try:
-            link_response = requests.head(link, allow_redirects=True)
+            link_response = requests.head(link, allow_redirects=True, timeout=5)
             if link_response.status_code == 404:
                 broken_links.append(link)
         except requests.exceptions.RequestException:
@@ -172,19 +192,14 @@ while to_visit:
         'Content': body
     }
 
-    # Append the page data to the output list
-    output_data.append(page_data)
-
     # Post the page data to the web service
     try:
-        post_response = requests.post(web_service_url, json=page_data)
-        if post_response.status_code != 201:
-            print(f'Failed to post data for {url}: {post_response.status_code} - {post_response.text}', file=sys.stderr)
+        post_response = requests.post(web_service_url, json=page_data, timeout=10)
+        if post_response.status_code == 201:
+            logging.info(f"Successfully posted data for {url}\n")
+        else:
+            logging.error(f'Failed to post data for {url}: {post_response.status_code} - {post_response.text}\n')
     except requests.exceptions.RequestException as e:
-        print(f'Failed to post data for {url}: {e}', file=sys.stderr)
+        logging.error(f'Failed to post data for {url}: {e}\n')
 
-# Save output to a JSON file
-with open('website_content.json', 'w', encoding='utf-8') as f:
-    json.dump(output_data, f, indent=4, ensure_ascii=False)
-
-print('Website content has been extracted to website_content.json')
+logging.info("All URLs have been processed.")
