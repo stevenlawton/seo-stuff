@@ -4,11 +4,7 @@ import "sea-stuff/models"
 
 // MobileFriendlinessHandler checks if the page is mobile-friendly
 type MobileFriendlinessHandler struct {
-	next Handler
-}
-
-func (h *MobileFriendlinessHandler) SetNext(handler Handler) {
-	h.next = handler
+	BaseHandler
 }
 
 func (h *MobileFriendlinessHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
@@ -18,11 +14,9 @@ func (h *MobileFriendlinessHandler) Handle(version *models.ExtractVersion, impro
 			Field:    "IsMobileFriendly",
 			OldValue: "The page is not optimized for mobile devices",
 			NewValue: "Ensure that the page is responsive and adjusts correctly on mobile devices",
-			Status:   "pending",
+			Status:   "Pending", // Standardized capitalization
 		})
 	}
 
-	if h.next != nil {
-		h.next.Handle(version, improvements)
-	}
+	h.CallNext(version, improvements)
 }

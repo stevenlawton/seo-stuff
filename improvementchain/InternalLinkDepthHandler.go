@@ -7,11 +7,7 @@ import (
 
 // InternalLinkDepthHandler checks if the page depth is within acceptable limits
 type InternalLinkDepthHandler struct {
-	next Handler
-}
-
-func (h *InternalLinkDepthHandler) SetNext(handler Handler) {
-	h.next = handler
+	BaseHandler
 }
 
 func (h *InternalLinkDepthHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
@@ -21,11 +17,9 @@ func (h *InternalLinkDepthHandler) Handle(version *models.ExtractVersion, improv
 			Field:    "PageDepth",
 			OldValue: "Page depth: " + fmt.Sprintf("%d", version.PageDepth),
 			NewValue: "Reduce page depth to improve crawl efficiency (aim for a depth of 3 or less)",
-			Status:   "pending",
+			Status:   "Pending", // Standardized capitalization
 		})
 	}
 
-	if h.next != nil {
-		h.next.Handle(version, improvements)
-	}
+	h.CallNext(version, improvements)
 }

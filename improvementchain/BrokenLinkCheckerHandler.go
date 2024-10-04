@@ -1,27 +1,39 @@
 package improvementchain
 
-import "sea-stuff/models"
+import (
+	"fmt"
+	"net/http"
+	"sea-stuff/models"
+)
 
+// BrokenLinkCheckerHandler checks for broken links and provides detailed information
 type BrokenLinkCheckerHandler struct {
-	next Handler
-}
-
-func (h *BrokenLinkCheckerHandler) SetNext(handler Handler) {
-	h.next = handler
+	BaseHandler
 }
 
 func (h *BrokenLinkCheckerHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
-	for _, brokenLink := range version.BrokenLinks {
+	if len(version.BrokenLinks) > 0 {
+		details := ""
+		for _, link := range version.BrokenLinks {
+			statusCode := h.getHTTPStatusCode(link)
+			details += fmt.Sprintf("- %s (Status: %d)\n", link, statusCode)
+		}
 		*improvements = append(*improvements, models.Improvement{
-			Name:     "Broken Link",
+			Name:     "Broken Links Found",
 			Field:    "Links",
-			OldValue: brokenLink,
-			NewValue: "Replace or remove the broken link",
-			Status:   "pending",
+			OldValue: details,
+			NewValue: "Replace or remove the broken links listed above",
+			Status:   "Pending",
 		})
 	}
+	h.CallNext(version, improvements)
+}
 
-	if h.next != nil {
-		h.next.Handle(version, improvements)
+func (h *BrokenLinkCheckerHandler) getHTTPStatusCode(link string) int {
+	resp, err := http.Head(link)
+	if err != nil {
+		return 0 // Unable to retrieve status code
 	}
+	defer resp.Body.Close()
+	return resp.StatusCode
 }

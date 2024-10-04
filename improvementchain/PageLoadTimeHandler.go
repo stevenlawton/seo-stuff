@@ -7,11 +7,7 @@ import (
 
 // PageLoadTimeHandler checks if the page load time is within acceptable limits
 type PageLoadTimeHandler struct {
-	next Handler
-}
-
-func (h *PageLoadTimeHandler) SetNext(handler Handler) {
-	h.next = handler
+	BaseHandler
 }
 
 func (h *PageLoadTimeHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
@@ -21,11 +17,9 @@ func (h *PageLoadTimeHandler) Handle(version *models.ExtractVersion, improvement
 			Field:    "PageLoadTimeSeconds",
 			OldValue: "Page load time: " + fmt.Sprintf("%.2f", version.PageLoadTimeSeconds) + " seconds",
 			NewValue: "Reduce page load time to under 3 seconds",
-			Status:   "pending",
+			Status:   "Pending", // Standardized capitalization
 		})
 	}
 
-	if h.next != nil {
-		h.next.Handle(version, improvements)
-	}
+	h.CallNext(version, improvements)
 }

@@ -105,6 +105,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 		CreatedAt:             time.Now(),
 		UpdatedAt:             time.Now(),
 		Title:                 data.Title,
+		URL:                   data.URL,
 		MetaTags:              data.MetaTags,
 		RobotsMetaTag:         data.RobotsMetaTag,
 		CommonWords:           flattenCommonWords(data.CommonWords),

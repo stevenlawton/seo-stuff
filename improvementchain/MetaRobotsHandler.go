@@ -4,11 +4,7 @@ import "sea-stuff/models"
 
 // MetaRobotsHandler checks if the meta robots tag is correctly set
 type MetaRobotsHandler struct {
-	next Handler
-}
-
-func (h *MetaRobotsHandler) SetNext(handler Handler) {
-	h.next = handler
+	BaseHandler
 }
 
 func (h *MetaRobotsHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
@@ -18,7 +14,7 @@ func (h *MetaRobotsHandler) Handle(version *models.ExtractVersion, improvements 
 			Field:    "RobotsMetaTag",
 			OldValue: "No robots meta tag found",
 			NewValue: "Add a robots meta tag to control indexing (e.g., 'index, follow')",
-			Status:   "pending",
+			Status:   "Pending",
 		})
 	} else if version.RobotsMetaTag != "index, follow" {
 		*improvements = append(*improvements, models.Improvement{
@@ -26,11 +22,9 @@ func (h *MetaRobotsHandler) Handle(version *models.ExtractVersion, improvements 
 			Field:    "RobotsMetaTag",
 			OldValue: version.RobotsMetaTag,
 			NewValue: "Consider changing robots meta tag to 'index, follow' to allow indexing",
-			Status:   "pending",
+			Status:   "Pending",
 		})
 	}
 
-	if h.next != nil {
-		h.next.Handle(version, improvements)
-	}
+	h.CallNext(version, improvements)
 }

@@ -16,6 +16,7 @@ type ExtractVersion struct {
 	UpdatedAt             time.Time           `bson:"updatedAt" json:"updated_at"`
 	Version               int                 `bson:"version" json:"version"` // Added to track version number
 	Title                 string              `bson:"title" json:"title"`
+	URL                   string              `bson:"url" json:"url"`
 	RobotsMetaTag         string              `bson:"robotsMetaTag" json:"robots_meta_tag"`
 	CommonWords           []string            `bson:"commonWords" json:"common_words"`
 	SocialTags            string              `bson:"socialTags" json:"social_tags"`
@@ -46,6 +47,8 @@ type ExtractVersion struct {
 	Content               string              `json:"content" bson:"content"`
 	Breadcrumbs           []string            `json:"breadcrumbs" bson:"breadcrumbs"`
 	IsMobileFriendly      bool                `json:"isMobileFriendly" bson:"isMobileFriendly"`
+
+	BrandJSON string //TODO:
 }
 
 // Represents an improvement suggestion for a specific version of a page

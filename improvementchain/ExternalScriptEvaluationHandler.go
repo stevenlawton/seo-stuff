@@ -7,11 +7,7 @@ import (
 
 // ExternalScriptEvaluationHandler checks if external scripts are slowing down the page
 type ExternalScriptEvaluationHandler struct {
-	next Handler
-}
-
-func (h *ExternalScriptEvaluationHandler) SetNext(handler Handler) {
-	h.next = handler
+	BaseHandler
 }
 
 func (h *ExternalScriptEvaluationHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
@@ -21,11 +17,9 @@ func (h *ExternalScriptEvaluationHandler) Handle(version *models.ExtractVersion,
 			Field:    "ExternalScripts",
 			OldValue: "External scripts found: " + fmt.Sprintf("%d", len(version.ExternalScripts)),
 			NewValue: "Consider reducing the number of external scripts or loading them asynchronously",
-			Status:   "pending",
+			Status:   "Pending", // Standardized capitalization
 		})
 	}
 
-	if h.next != nil {
-		h.next.Handle(version, improvements)
-	}
+	h.CallNext(version, improvements)
 }

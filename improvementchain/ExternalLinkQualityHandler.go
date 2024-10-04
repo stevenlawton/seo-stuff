@@ -5,21 +5,19 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url" // Correct package for parsing URLs
+	"net/url"
 	"sea-stuff/models"
 )
 
+// ExternalLinkQualityHandler checks external links for potential malicious domains using VirusTotal API
 type ExternalLinkQualityHandler struct {
-	next   Handler
+	BaseHandler
 	apiKey string
 }
 
+// NewExternalLinkQualityHandler creates a new instance of ExternalLinkQualityHandler
 func NewExternalLinkQualityHandler(apiKey string) *ExternalLinkQualityHandler {
 	return &ExternalLinkQualityHandler{apiKey: apiKey}
-}
-
-func (h *ExternalLinkQualityHandler) SetNext(handler Handler) {
-	h.next = handler
 }
 
 func (h *ExternalLinkQualityHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
@@ -36,19 +34,17 @@ func (h *ExternalLinkQualityHandler) Handle(version *models.ExtractVersion, impr
 				Field:    "ExternalLinks",
 				OldValue: link,
 				NewValue: "Replace with a link to a more authoritative or safer source",
-				Status:   "pending",
+				Status:   "Pending", // Standardized capitalization
 			})
 		}
 	}
 
-	if h.next != nil {
-		h.next.Handle(version, improvements)
-	}
+	h.CallNext(version, improvements)
 }
 
 func (h *ExternalLinkQualityHandler) checkDomainWithVirusTotal(domain string) (bool, error) {
-	url := fmt.Sprintf("https://www.virustotal.com/api/v3/domains/%s", domain)
-	req, err := http.NewRequest("GET", url, nil)
+	apiURL := fmt.Sprintf("https://www.virustotal.com/api/v3/domains/%s", domain)
+	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		return false, err
 	}
@@ -97,7 +93,7 @@ func (h *ExternalLinkQualityHandler) checkDomainWithVirusTotal(domain string) (b
 
 // Helper function to extract domain from URL
 func extractDomain(link string) string {
-	parsedURL, err := url.Parse(link) // Corrected function call
+	parsedURL, err := url.Parse(link)
 	if err != nil {
 		return ""
 	}
