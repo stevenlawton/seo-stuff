@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func HandlePageDetails(w http.ResponseWriter, r *http.Request) {
@@ -36,18 +38,26 @@ func HandlePageDetails(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Fetch the page document by extractId and url
+	// Fetch the page document by extractId and URL using projection to limit fields
 	var page models.AnalysisData
-	err = collection.FindOne(ctx, bson.M{"extractId": extractID, "url": url}).Decode(&page)
+	filter := bson.M{"extractId": extractID, "url": url}
+	projection := bson.M{"_id": 0} // Exclude internal MongoDB ID field
+	err = collection.FindOne(ctx, filter, options.FindOne().SetProjection(projection)).Decode(&page)
 	if err != nil {
-		log.Printf("Error fetching page details from the database: %v", err)
-		http.Error(w, "Error fetching page details from the database", http.StatusInternalServerError)
+		if err == mongo.ErrNoDocuments {
+			log.Printf("Page not found for extractId: %s, URL: %s", extractID, url)
+			http.Error(w, "Page not found", http.StatusNotFound)
+		} else {
+			log.Printf("Error fetching page details from the database: %v", err)
+			http.Error(w, "Error fetching page details from the database", http.StatusInternalServerError)
+		}
 		return
 	}
 
 	// Load and execute the HTML template
 	tmpl, err := template.ParseFiles("templates/page_detail.html")
 	if err != nil {
+		log.Printf("Error loading HTML template: %v", err)
 		http.Error(w, "Error loading HTML template", http.StatusInternalServerError)
 		return
 	}

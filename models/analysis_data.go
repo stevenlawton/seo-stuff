@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type AnalysisData struct {
 	ExtractID             string              `json:"extractId" bson:"extractId"`
 	URL                   string              `json:"url" bson:"url"`
@@ -34,6 +36,9 @@ type AnalysisData struct {
 	ExternalScripts       []string            `json:"externalScripts" bson:"externalScripts"`
 	ExternalStylesheets   []string            `json:"externalStylesheets" bson:"externalStylesheets"`
 	Improvements          []Improvement       `json:"improvements" bson:"improvements"`
+	CreatedAt             time.Time           `json:"createdAt" bson:"createdAt"` // To track when the analysis was created
+	UpdatedAt             time.Time           `json:"updatedAt" bson:"updatedAt"` // To track when it was last updated
+	Version               int                 `json:"version" bson:"version"`     // Version number to track changes
 }
 
 type ImageData struct {

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"html/template"
 	"log"
 	"net/http"
@@ -31,10 +32,19 @@ func HandleListPages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(extractIDs) == 0 {
+	var extractIDStrings []string
+	for _, id := range extractIDs {
+		if idStr, ok := id.(string); ok {
+			extractIDStrings = append(extractIDStrings, idStr)
+		} else {
+			log.Printf("Warning: Non-string extractId found: %v", id)
+		}
+	}
+
+	if len(extractIDStrings) == 0 {
 		log.Println("No extractIds found in the collection. Possible reasons could be no documents or incorrect field name.")
 	} else {
-		log.Printf("Extracted IDs: %v", extractIDs)
+		log.Printf("Extracted IDs: %v", extractIDStrings)
 	}
 
 	// Prepare the filter based on query parameter
@@ -44,22 +54,32 @@ func HandleListPages(w http.ResponseWriter, r *http.Request) {
 		filter = bson.M{"extractId": selectedExtractID}
 	}
 
-	// Fetch filtered pages from MongoDB
-	cursor, err := collection.Find(ctx, filter)
+	// Fetch filtered pages from MongoDB with a projection
+	projection := bson.D{{"url", 1}, {"title", 1}, {"extractId", 1}}
+	opts := options.Find().SetProjection(projection)
+
+	cursor, err := collection.Find(ctx, filter, opts)
 	if err != nil {
+		log.Printf("Error fetching data from the database: %v", err)
 		http.Error(w, "Error fetching data from the database", http.StatusInternalServerError)
 		return
 	}
-	defer cursor.Close(ctx)
+	defer func() {
+		if err = cursor.Close(ctx); err != nil {
+			log.Printf("Error closing cursor: %v", err)
+		}
+	}()
 
 	// Parse documents into a slice
 	var pages []PageWithKey
 	for cursor.Next(ctx) {
 		var page models.AnalysisData
 		if err = cursor.Decode(&page); err != nil {
+			log.Printf("Error decoding data from the database: %v", err)
 			http.Error(w, "Error decoding data from the database", http.StatusInternalServerError)
 			return
 		}
+
 		// Ensure that extractId is correctly passed to GenerateKey
 		syntheticKey := utils.GenerateKey(page.ExtractID, page.URL)
 		if page.ExtractID == "" {
@@ -69,10 +89,10 @@ func HandleListPages(w http.ResponseWriter, r *http.Request) {
 			AnalysisData: page,
 			SyntheticKey: syntheticKey,
 		})
-
 	}
 
 	if err := cursor.Err(); err != nil {
+		log.Printf("Error iterating through the data: %v", err)
 		http.Error(w, "Error iterating through the data", http.StatusInternalServerError)
 		return
 	}
@@ -80,6 +100,7 @@ func HandleListPages(w http.ResponseWriter, r *http.Request) {
 	// Load and execute the HTML template
 	tmpl, err := template.ParseFiles("templates/pages.html")
 	if err != nil {
+		log.Printf("Error loading HTML template: %v", err)
 		http.Error(w, "Error loading HTML template", http.StatusInternalServerError)
 		return
 	}
@@ -87,11 +108,11 @@ func HandleListPages(w http.ResponseWriter, r *http.Request) {
 	// Define a struct to pass the pages and extract IDs to the template
 	data := struct {
 		Pages             []PageWithKey
-		ExtractIDs        []interface{}
+		ExtractIDs        []string
 		SelectedExtractID string
 	}{
 		Pages:             pages,
-		ExtractIDs:        extractIDs,
+		ExtractIDs:        extractIDStrings,
 		SelectedExtractID: selectedExtractID,
 	}
 

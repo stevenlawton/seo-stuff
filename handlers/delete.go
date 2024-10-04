@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+// HandleDeleteByExtractID deletes the version and improvement documents associated with a given extractId.
 func HandleDeleteByExtractID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
@@ -21,15 +22,24 @@ func HandleDeleteByExtractID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set up the MongoDB collection
-	collection := client.Database("brandAdherence").Collection("analysis")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Delete all documents with the given extract ID
-	_, err := collection.DeleteMany(ctx, bson.M{"extractId": extractID})
+	// Set up the MongoDB collections
+	versionCollection := client.Database("brandAdherence").Collection("versions")
+	improvementCollection := client.Database("brandAdherence").Collection("improvements")
+
+	// Delete all versions with the given extract ID
+	_, err := versionCollection.DeleteMany(ctx, bson.M{"extractId": extractID})
 	if err != nil {
-		http.Error(w, "Error deleting documents from the database", http.StatusInternalServerError)
+		http.Error(w, "Error deleting versions from the database", http.StatusInternalServerError)
+		return
+	}
+
+	// Delete all improvements associated with the given extract ID
+	_, err = improvementCollection.DeleteMany(ctx, bson.M{"extractId": extractID})
+	if err != nil {
+		http.Error(w, "Error deleting improvements from the database", http.StatusInternalServerError)
 		return
 	}
 

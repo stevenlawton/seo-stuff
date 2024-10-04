@@ -54,7 +54,7 @@ func HandleRunScanners(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch the page data from MongoDB
-	collection := client.Database("brandAdherence").Collection("analysis")
+	collection := client.Database("brandAdherence").Collection("versions")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -114,9 +114,6 @@ func HandleRunScanners(w http.ResponseWriter, r *http.Request) {
 	// Execute the chain
 	titleHandler.Handle(&page, &improvements)
 
-	// Execute the chain
-	titleHandler.Handle(&page, &improvements)
-
 	// Update the MongoDB document with the generated improvements
 	update := bson.M{
 		"$set": bson.M{
@@ -130,6 +127,8 @@ func HandleRunScanners(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error updating page improvements in database", http.StatusInternalServerError)
 		return
 	}
+
+	log.Printf("Successfully updated improvements for ExtractID: %s, URL: %s", extractID, url)
 
 	// Send the improvements back as a response
 	w.Header().Set("Content-Type", "application/json")
