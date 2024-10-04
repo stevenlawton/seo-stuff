@@ -7,15 +7,15 @@ type TitleLengthHandler struct {
 	BaseHandler
 }
 
-func (h *TitleLengthHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
-	if page.TitleLength > 60 {
+func (h *TitleLengthHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
+	if version.TitleLength > 60 {
 		*improvements = append(*improvements, models.Improvement{
 			Name:     "Title Length Too Long",
 			Field:    "Title",
-			OldValue: page.Title,
+			OldValue: version.Title,
 			NewValue: "Title should be 60 characters or less",
 			Status:   "pending",
 		})
 	}
-	h.CallNext(page, improvements)
+	h.CallNext(version, improvements)
 }

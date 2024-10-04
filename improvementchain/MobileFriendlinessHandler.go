@@ -11,8 +11,8 @@ func (h *MobileFriendlinessHandler) SetNext(handler Handler) {
 	h.next = handler
 }
 
-func (h *MobileFriendlinessHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
-	if !page.IsMobileFriendly {
+func (h *MobileFriendlinessHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
+	if !version.IsMobileFriendly {
 		*improvements = append(*improvements, models.Improvement{
 			Name:     "Not Mobile-Friendly",
 			Field:    "IsMobileFriendly",
@@ -23,6 +23,6 @@ func (h *MobileFriendlinessHandler) Handle(page *models.AnalysisData, improvemen
 	}
 
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }

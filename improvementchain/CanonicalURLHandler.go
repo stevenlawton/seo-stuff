@@ -11,18 +11,18 @@ func (h *CanonicalURLHandler) SetNext(handler Handler) {
 	h.next = handler
 }
 
-func (h *CanonicalURLHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
-	if !page.IsCanonicalCorrect {
+func (h *CanonicalURLHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
+	if !version.IsCanonicalCorrect {
 		*improvements = append(*improvements, models.Improvement{
 			Name:     "Incorrect Canonical URL",
 			Field:    "CanonicalURL",
-			OldValue: page.CanonicalURL,
+			OldValue: version.CanonicalURL,
 			NewValue: "Update the canonical URL to match the current page URL",
 			Status:   "pending",
 		})
 	}
 
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }

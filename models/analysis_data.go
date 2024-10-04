@@ -2,10 +2,36 @@ package models
 
 import "time"
 
-type AnalysisData struct {
-	ExtractID             string              `json:"extractId" bson:"extractId"`
-	URL                   string              `json:"url" bson:"url"`
-	Title                 string              `json:"title" bson:"title"`
+// Represents a web page with its multiple versions (ExtractIDs)
+type Page struct {
+	ID       string           `bson:"_id,omitempty" json:"id"`
+	URL      string           `bson:"url" json:"url"`
+	Versions []ExtractVersion `bson:"versions" json:"versions"`
+}
+
+// Represents a specific version of a web page, identified by ExtractID
+type ExtractVersion struct {
+	ExtractID             string              `bson:"extractId" json:"extract_id"`
+	CreatedAt             time.Time           `bson:"createdAt" json:"created_at"`
+	UpdatedAt             time.Time           `bson:"updatedAt" json:"updated_at"`
+	Version               int                 `bson:"version" json:"version"` // Added to track version number
+	Title                 string              `bson:"title" json:"title"`
+	RobotsMetaTag         string              `bson:"robotsMetaTag" json:"robots_meta_tag"`
+	CommonWords           []string            `bson:"commonWords" json:"common_words"`
+	SocialTags            string              `bson:"socialTags" json:"social_tags"`
+	Hreflangs             []string            `bson:"hreflangs" json:"hreflangs"`
+	InternalLinks         []string            `bson:"internalLinks" json:"internal_links"`
+	InternalLinksWithText []LinkWithText      `bson:"internalLinksWithText" json:"internal_links_with_text"`
+	ExternalLinks         []string            `bson:"externalLinks" json:"external_links"`
+	Images                []Image             `bson:"images" json:"images"`
+	StructuredDataTypes   []string            `bson:"structuredDataTypes" json:"structured_data_types"`
+	StructuredData        []string            `bson:"structuredData" json:"structured_data"`
+	ExternalScripts       []string            `bson:"externalScripts" json:"external_scripts"`
+	ExternalStylesheets   []string            `bson:"externalStylesheets" json:"external_stylesheets"`
+	PageLoadTimeSeconds   float64             `bson:"pageLoadTimeSeconds" json:"page_load_time_seconds"`
+	PageSizeBytes         int                 `bson:"pageSizeBytes" json:"page_size_bytes"`
+	Language              string              `bson:"language" json:"language"`
+	Improvements          []Improvement       `bson:"improvements" json:"improvements"`
 	TitleLength           int                 `json:"titleLength" bson:"titleLength"`
 	MetaDescription       string              `json:"metaDescription" bson:"metaDescription"`
 	MetaDescriptionLength int                 `json:"metaDescriptionLength" bson:"metaDescriptionLength"`
@@ -16,47 +42,38 @@ type AnalysisData struct {
 	H1TagCount            int                 `json:"h1TagCount" bson:"h1TagCount"`
 	WordCount             int                 `json:"wordCount" bson:"wordCount"`
 	PageDepth             int                 `json:"pageDepth" bson:"pageDepth"`
-	PageLoadTimeSeconds   float64             `json:"pageLoadTimeSeconds" bson:"pageLoadTimeSeconds"`
-	PageSizeBytes         int                 `json:"pageSizeBytes" bson:"pageSizeBytes"`
-	Images                []ImageData         `json:"images" bson:"images"`
-	InternalLinks         []string            `json:"internalLinks" bson:"internalLinks"`
-	InternalLinksWithText []LinkWithText      `json:"internalLinksWithAnchorText" bson:"internalLinksWithAnchorText"`
-	ExternalLinks         []string            `json:"externalLinks" bson:"externalLinks"`
 	BrokenLinks           []string            `json:"brokenLinks" bson:"brokenLinks"`
-	StructuredData        []string            `json:"structuredData" bson:"structuredData"`
-	StructuredDataTypes   []string            `json:"structuredDataTypes" bson:"structuredDataTypes"`
-	RobotsMetaTag         string              `json:"robotsMetaTag" bson:"robotsMetaTag"`
 	Content               string              `json:"content" bson:"content"`
-	CommonWords           [][]interface{}     `json:"commonWords" bson:"commonWords"`
-	SocialTags            map[string]string   `json:"socialTags" bson:"socialTags"`
-	Language              string              `json:"language" bson:"language"`
-	Hreflangs             []string            `json:"hreflangs" bson:"hreflangs"`
 	Breadcrumbs           []string            `json:"breadcrumbs" bson:"breadcrumbs"`
 	IsMobileFriendly      bool                `json:"isMobileFriendly" bson:"isMobileFriendly"`
-	ExternalScripts       []string            `json:"externalScripts" bson:"externalScripts"`
-	ExternalStylesheets   []string            `json:"externalStylesheets" bson:"externalStylesheets"`
-	Improvements          []Improvement       `json:"improvements" bson:"improvements"`
-	CreatedAt             time.Time           `json:"createdAt" bson:"createdAt"` // To track when the analysis was created
-	UpdatedAt             time.Time           `json:"updatedAt" bson:"updatedAt"` // To track when it was last updated
-	Version               int                 `json:"version" bson:"version"`     // Version number to track changes
 }
 
-type ImageData struct {
-	Src    string `json:"src" bson:"src"`
-	Alt    string `json:"alt" bson:"alt"`
-	Width  string `json:"width" bson:"width"`
-	Height string `json:"height" bson:"height"`
-}
-
-type LinkWithText struct {
-	Href       string `json:"href" bson:"href"`
-	AnchorText string `json:"anchorText" bson:"anchorText"`
-}
-
+// Represents an improvement suggestion for a specific version of a page
 type Improvement struct {
-	Name     string `json:"name" bson:"name"`
-	Field    string `json:"field" bson:"field"`
-	OldValue string `json:"old_value" bson:"old_value"`
-	NewValue string `json:"new_value" bson:"new_value"`
-	Status   string `json:"status" bson:"status"` // e.g., "ignored", "done", "pending"
+	Name     string `bson:"name" json:"name"`
+	Field    string `bson:"field" json:"field"`
+	OldValue string `bson:"oldValue" json:"old_value"`
+	NewValue string `bson:"newValue" json:"new_value"`
+	Status   string `bson:"status" json:"status"`
+}
+
+// Represents HTML header tags (H1, H2, H3) for each version
+type HeaderTags struct {
+	H1 []string `bson:"h1" json:"h1"`
+	H2 []string `bson:"h2" json:"h2"`
+	H3 []string `bson:"h3" json:"h3"`
+}
+
+// Represents an image and its metadata
+type Image struct {
+	Src    string `bson:"src" json:"src"`
+	Alt    string `bson:"alt" json:"alt"`
+	Width  int    `bson:"width" json:"width"`
+	Height int    `bson:"height" json:"height"`
+}
+
+// Represents internal links with anchor text details
+type LinkWithText struct {
+	Href       string `bson:"href" json:"href"`
+	AnchorText string `bson:"anchorText" json:"anchor_text"`
 }

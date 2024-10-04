@@ -10,8 +10,8 @@ func (h *BrokenLinkCheckerHandler) SetNext(handler Handler) {
 	h.next = handler
 }
 
-func (h *BrokenLinkCheckerHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
-	for _, brokenLink := range page.BrokenLinks {
+func (h *BrokenLinkCheckerHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
+	for _, brokenLink := range version.BrokenLinks {
 		*improvements = append(*improvements, models.Improvement{
 			Name:     "Broken Link",
 			Field:    "Links",
@@ -22,6 +22,6 @@ func (h *BrokenLinkCheckerHandler) Handle(page *models.AnalysisData, improvement
 	}
 
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }

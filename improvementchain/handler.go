@@ -4,7 +4,7 @@ import "sea-stuff/models"
 
 // Handler interface for the chain of responsibility pattern
 type Handler interface {
-	Handle(page *models.AnalysisData, improvements *[]models.Improvement)
+	Handle(version *models.ExtractVersion, improvements *[]models.Improvement)
 	SetNext(handler Handler)
 }
 
@@ -19,8 +19,8 @@ func (h *BaseHandler) SetNext(handler Handler) {
 }
 
 // CallNext moves to the next handler, if it exists
-func (h *BaseHandler) CallNext(page *models.AnalysisData, improvements *[]models.Improvement) {
+func (h *BaseHandler) CallNext(version *models.ExtractVersion, improvements *[]models.Improvement) {
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }

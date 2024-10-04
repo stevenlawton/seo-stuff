@@ -13,9 +13,9 @@ func (h *ContentReadabilityHandler) SetNext(handler Handler) {
 	h.next = handler
 }
 
-func (h *ContentReadabilityHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
+func (h *ContentReadabilityHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
 	// Assume we use a readability scoring algorithm (simplified for demonstration)
-	readabilityScore := calculateReadabilityScore(page.Content)
+	readabilityScore := calculateReadabilityScore(version.Content)
 
 	if readabilityScore < 60 {
 		*improvements = append(*improvements, models.Improvement{
@@ -28,7 +28,7 @@ func (h *ContentReadabilityHandler) Handle(page *models.AnalysisData, improvemen
 	}
 
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }
 

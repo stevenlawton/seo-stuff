@@ -11,8 +11,8 @@ func (h *H1TagCountHandler) SetNext(handler Handler) {
 	h.next = handler
 }
 
-func (h *H1TagCountHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
-	if page.H1TagCount > 1 {
+func (h *H1TagCountHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
+	if version.H1TagCount > 1 {
 		*improvements = append(*improvements, models.Improvement{
 			Name:     "Multiple H1 Tags",
 			Field:    "HTags.h1",
@@ -20,7 +20,7 @@ func (h *H1TagCountHandler) Handle(page *models.AnalysisData, improvements *[]mo
 			NewValue: "Only one H1 tag should be used per page",
 			Status:   "pending",
 		})
-	} else if page.H1TagCount == 0 {
+	} else if version.H1TagCount == 0 {
 		*improvements = append(*improvements, models.Improvement{
 			Name:     "Missing H1 Tag",
 			Field:    "HTags.h1",
@@ -31,6 +31,6 @@ func (h *H1TagCountHandler) Handle(page *models.AnalysisData, improvements *[]mo
 	}
 
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }

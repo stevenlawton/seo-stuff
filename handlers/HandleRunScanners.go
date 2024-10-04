@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"net/http"
 	"os"
@@ -15,7 +14,7 @@ import (
 	"time"
 )
 
-// HandleRunScanners runs the improvement chain on the given page
+// HandleRunScanners runs the improvement chain on the given page version
 func HandleRunScanners(w http.ResponseWriter, r *http.Request) {
 	log.Println("Received request to /run_scanners")
 
@@ -54,12 +53,12 @@ func HandleRunScanners(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch the page data from MongoDB
-	collection := client.Database("brandAdherence").Collection("versions")
+	collection := client.Database("brandAdherence").Collection("pages")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	var page models.AnalysisData
-	filter := bson.M{"extractId": extractID, "url": url}
+	var page models.Page
+	filter := bson.M{"url": url, "versions.extractId": extractID}
 	err = collection.FindOne(ctx, filter).Decode(&page)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -67,6 +66,21 @@ func HandleRunScanners(w http.ResponseWriter, r *http.Request) {
 		} else {
 			http.Error(w, "Error fetching page from database", http.StatusInternalServerError)
 		}
+		return
+	}
+
+	// Find the specific version within the page
+	var pageVersion *models.ExtractVersion
+	for i, version := range page.Versions {
+		if version.ExtractID == extractID {
+			pageVersion = &page.Versions[i]
+			break
+		}
+	}
+
+	if pageVersion == nil {
+		log.Println("Error: Specified version not found")
+		http.Error(w, "Specified version not found", http.StatusNotFound)
 		return
 	}
 
@@ -112,16 +126,16 @@ func HandleRunScanners(w http.ResponseWriter, r *http.Request) {
 	socialMetaTagsHandler.SetNext(brokenLinkCheckerHandler)
 
 	// Execute the chain
-	titleHandler.Handle(&page, &improvements)
+	titleHandler.Handle(pageVersion, &improvements)
+
+	// Update the improvements of the specific version
+	pageVersion.Improvements = improvements
 
 	// Update the MongoDB document with the generated improvements
 	update := bson.M{
-		"$set": bson.M{
-			"improvements": improvements,
-		},
+		"$set": bson.M{"versions.$.improvements": pageVersion.Improvements},
 	}
-	opts := options.Update().SetUpsert(true)
-	_, err = collection.UpdateOne(ctx, filter, update, opts)
+	_, err = collection.UpdateOne(ctx, filter, update)
 	if err != nil {
 		log.Printf("Error updating page improvements in database: %v", err)
 		http.Error(w, "Error updating page improvements in database", http.StatusInternalServerError)

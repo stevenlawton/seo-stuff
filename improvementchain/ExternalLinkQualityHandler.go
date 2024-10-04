@@ -22,8 +22,8 @@ func (h *ExternalLinkQualityHandler) SetNext(handler Handler) {
 	h.next = handler
 }
 
-func (h *ExternalLinkQualityHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
-	for _, link := range page.ExternalLinks {
+func (h *ExternalLinkQualityHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
+	for _, link := range version.ExternalLinks {
 		domain := extractDomain(link)
 		if domain == "" {
 			continue
@@ -42,7 +42,7 @@ func (h *ExternalLinkQualityHandler) Handle(page *models.AnalysisData, improveme
 	}
 
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }
 

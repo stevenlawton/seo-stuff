@@ -3,66 +3,60 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page List</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 
 <body class="container my-5">
-<h1 class="mb-4">List of Pages</h1>
+<div class="container mt-5">
+    <h1 class="mb-4">Pages by Domain</h1>
 
-<!-- Form to filter by Extract ID -->
-<form method="get" action="/pages" class="form-inline mb-3">
-    <label for="extractId" class="mr-2">Filter by Extract ID:</label>
-    <select name="extractId" id="extractId" class="form-control mr-2" onchange="this.form.submit()">
-        <option value="">-- Select Extract ID --</option>
-        {{range .ExtractIDs}}
-        <option value="{{.}}" {{if eq $.SelectedExtractID .}}selected{{end}}>{{.}}</option>
+    <!-- Domain Selection Form -->
+    <form method="get" action="/pages">
+        <div class="form-group">
+            <label for="domain">Select Domain:</label>
+            <select name="domain" id="domain" class="form-control" onchange="this.form.submit()">
+                <option value="">--Select Domain--</option>
+                {{range .Domains}}
+                <option value="{{.}}" {{if eq . $.SelectedDomain}}selected{{end}}>{{.}}</option>
+                {{end}}
+            </select>
+        </div>
+    </form>
+
+    <!-- Table displaying the pages -->
+    <table class="table table-bordered table-hover">
+        <thead class="thead-dark">
+        <tr>
+            <th>Page URL</th>
+            <th>Version Title</th>
+            <th>Improvement Count</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range .Pages}}
+        <tr>
+            <td><a href="/pages/{{.SyntheticKey}}" target="_blank">{{.URL}}</a></td>
+            <td>{{.Title}}</td>
+            <td>{{if .Improvements}}{{len .Improvements}}{{else}}0{{end}}</td>
+            <td>
+                        <button class="btn btn-info btn-sm" onclick="runScanners('{{.SyntheticKey}}')">Run Scanners</button>
+                        <button class="btn btn-secondary btn-sm" onclick="viewSuggestions('{{.SyntheticKey}}')">View Suggestions</button>
+            </td>
+        </tr>
         {{end}}
-    </select>
-</form>
-
-<!-- Form to delete entries by extract ID -->
-<form method="post" action="/delete_by_extract_id" class="mb-4">
-    <input type="hidden" name="extractId" value="{{.SelectedExtractID}}">
-    <button type="submit" class="btn btn-danger" {{if eq .SelectedExtractID ""}}disabled{{end}}>Delete All Entries for Extract ID</button>
-</form>
-
-<!-- Table displaying the pages -->
-<table class="table table-bordered table-hover">
-    <thead class="thead-dark">
-    <tr>
-        <th>Page</th>
-        <th>Title</th>
-        <th>Improvement Count</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    {{range .Pages}}
-    <tr>
-        <td><a href="/pages/{{.SyntheticKey}}" target="_blank">{{.URL}}</a></td>
-        <td>{{.Title}}</td>
-        <td>{{if .Improvements}}{{len .Improvements}}{{else}}0{{end}}</td>
-        <td>
-            <button class="btn btn-info btn-sm" onclick="runScanners('{{.SyntheticKey}}')">Run Scanners</button>
-            <button class="btn btn-secondary btn-sm" onclick="viewSuggestions('{{.SyntheticKey}}')">View Suggestions</button>
-        </td>
-    </tr>
-    {{end}}
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
 
 <!-- JavaScript functions -->
 <script>
-    function runScanners(SyntheticKey) {
-
-    // Create the request body with the correct extractId and page URL (synthetic key)
+        function runScanners(syntheticKey) {
         const requestBody = {
-            SyntheticKey: SyntheticKey,
+                SyntheticKey: syntheticKey,
         };
 
-        // Send the POST request to the server
         fetch('/run_scanners', {
             method: 'POST',
             headers: {
@@ -78,7 +72,7 @@
             })
             .then(data => {
                 if (Array.isArray(data) && data.length > 0) {
-                    let improvements = data.map(imp => `<li>${imp.name}: ${imp.field} - Suggested change from "${imp.old_value}" to "${imp.new_value}"</li>`).join('');
+                    let improvements = data.map(imp => `${imp.name}: ${imp.field} - Suggested change from "${imp.old_value}" to "${imp.new_value}"`).join('\n');
                     alert("Improvements:\n" + improvements);
                 } else {
                     alert("No improvements found.");
@@ -90,16 +84,16 @@
             });
     }
 
-    function viewSuggestions(syntheticKey) {
-        alert('Viewing suggestions for Synthetic Key: ' + syntheticKey);
-        // Implementation for viewing suggestions can be added here
+        function viewSuggestions(syntheticKey) {
+            alert('Viewing suggestions for Synthetic Key: ' + syntheticKey);
+            // You can implement viewing suggestions logic here
     }
-
 </script>
 
-<!-- Including Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-LtrjvnR4/JmcD8jXx1phelPZC6B83ib1iPQIukV7mV9t4l59Htx5C56Fzpa0LOkR" crossorigin="anonymous"></script>
+<!-- Include Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
 </html>

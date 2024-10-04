@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Details - {{.Title}}</title>
+    <title>Page Details - {{.Version.Title}}</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="container mt-5">
-    <h1 class="mb-4">Details for Page: {{.Title}}</h1>
+    <h1 class="mb-4">Details for Page: {{.Version.Title}}</h1>
 
     <!-- Improvements Section -->
     <h2>Improvements</h2>
-    {{if .Improvements}}
+    {{if .Version.Improvements}}
     <ul class="list-group mb-4">
-        {{range .Improvements}}
+        {{range .Version.Improvements}}
         <li class="list-group-item">
             <strong>{{.Name}}</strong> (Field: {{.Field}})
             <br>Old Value: "{{.OldValue}}"
@@ -24,46 +24,50 @@
         {{end}}
     </ul>
     {{else}}
-    <p>No improvements suggested for this page.</p>
+    <p>No improvements suggested for this page version.</p>
     {{end}}
 
     <h2>General Information</h2>
     <table class="table table-striped">
         <tr>
             <th>URL</th>
-            <td><a href="{{.URL}}" target="_blank">{{.URL}}</a></td>
+            <td><a href="{{.PageURL}}" target="_blank">{{.PageURL}}</a></td>
         </tr>
         <tr>
             <th>Title</th>
-            <td>{{.Title}}</td>
+            <td>{{.Version.Title}}</td>
         </tr>
         <tr>
             <th>Meta Description</th>
-            <td>{{.MetaDescription}}</td>
+            <td>{{.Version.MetaDescription}}</td>
         </tr>
         <tr>
             <th>Canonical URL</th>
-            <td>{{.CanonicalURL}}</td>
+            <td>{{.Version.CanonicalURL}}</td>
         </tr>
         <tr>
             <th>Is Canonical Correct?</th>
-            <td>{{.IsCanonicalCorrect}}</td>
+            <td>{{.Version.IsCanonicalCorrect}}</td>
         </tr>
         <tr>
             <th>Word Count</th>
-            <td>{{.WordCount}}</td>
+            <td>{{.Version.WordCount}}</td>
         </tr>
         <tr>
             <th>Page Load Time (seconds)</th>
-            <td>{{.PageLoadTimeSeconds}}</td>
+            <td>{{.Version.PageLoadTimeSeconds}}</td>
         </tr>
         <tr>
             <th>Page Size (bytes)</th>
-            <td>{{.PageSizeBytes}}</td>
+            <td>{{.Version.PageSizeBytes}}</td>
         </tr>
         <tr>
             <th>Language</th>
-            <td>{{.Language}}</td>
+            <td>{{.Version.Language}}</td>
+        </tr>
+        <tr>
+            <th>Breadcrumbs</th>
+            <td>{{range .Version.Breadcrumbs}}<span>{{.}}</span><br>{{end}}</td>
         </tr>
     </table>
 
@@ -72,19 +76,19 @@
         <tr>
             <th>Meta Tags</th>
             <td>
-                <pre>{{.MetaTags}}</pre>
+                <pre>{{.Version.MetaTags}}</pre>
             </td>
         </tr>
         <tr>
             <th>Robots Meta Tag</th>
-            <td>{{.RobotsMetaTag}}</td>
+            <td>{{.Version.RobotsMetaTag}}</td>
         </tr>
         <tr>
             <th>Common Words</th>
             <td>
                 <ul>
-                    {{range .CommonWords}}
-                    <li>{{index . 0}}: {{index . 1}}</li>
+                    {{range .Version.CommonWords}}
+                    <li>{{.}}</li>
                     {{end}}
                 </ul>
             </td>
@@ -92,12 +96,12 @@
         <tr>
             <th>Social Tags</th>
             <td>
-                <pre>{{.SocialTags}}</pre>
+                <pre>{{.Version.SocialTags}}</pre>
             </td>
         </tr>
         <tr>
             <th>Hreflangs</th>
-            <td>{{range .Hreflangs}}<span>{{.}}</span><br>{{end}}</td>
+            <td>{{range .Version.Hreflangs}}<span>{{.}}</span><br>{{end}}</td>
         </tr>
     </table>
 
@@ -105,15 +109,15 @@
     <table class="table table-striped">
         <tr>
             <th>H1 Tags</th>
-            <td>{{range .HTags.h1}}<span>{{.}}</span><br>{{end}}</td>
+            <td>{{range .Version.HTags.H1}}<span>{{.}}</span><br>{{end}}</td>
         </tr>
         <tr>
             <th>H2 Tags</th>
-            <td>{{range .HTags.h2}}<span>{{.}}</span><br>{{end}}</td>
+            <td>{{range .Version.HTags.H2}}<span>{{.}}</span><br>{{end}}</td>
         </tr>
         <tr>
             <th>H3 Tags</th>
-            <td>{{range .HTags.h3}}<span>{{.}}</span><br>{{end}}</td>
+            <td>{{range .Version.HTags.H3}}<span>{{.}}</span><br>{{end}}</td>
         </tr>
     </table>
 
@@ -123,7 +127,7 @@
             <th>Internal Links</th>
             <td>
                 <ul>
-                    {{range .InternalLinks}}
+                    {{range .Version.InternalLinks}}
                     <li><a href="{{.}}" target="_blank">{{.}}</a></li>
                     {{end}}
                 </ul>
@@ -133,7 +137,7 @@
             <th>Internal Links with Anchor Text</th>
             <td>
                 <ul>
-                    {{range .InternalLinksWithText}}
+                    {{range .Version.InternalLinksWithText}}
                     <li><a href="{{.Href}}" target="_blank">{{.Href}}</a> - {{.AnchorText}}</li>
                     {{end}}
                 </ul>
@@ -143,7 +147,7 @@
             <th>External Links</th>
             <td>
                 <ul>
-                    {{range .ExternalLinks}}
+                    {{range .Version.ExternalLinks}}
                     <li><a href="{{.}}" target="_blank">{{.}}</a></li>
                     {{end}}
                 </ul>
@@ -162,7 +166,7 @@
         </tr>
         </thead>
         <tbody>
-        {{range .Images}}
+        {{range .Version.Images}}
         <tr>
             <td><img src="{{.Src}}" alt="{{.Alt}}" width="100"></td>
             <td>{{.Alt}}</td>
@@ -177,12 +181,12 @@
     <table class="table table-striped">
         <tr>
             <th>Structured Data Types</th>
-            <td>{{range .StructuredDataTypes}}<span>{{.}}</span><br>{{end}}</td>
+            <td>{{range .Version.StructuredDataTypes}}<span>{{.}}</span><br>{{end}}</td>
         </tr>
         <tr>
             <th>Structured Data</th>
             <td>
-                <pre>{{range .StructuredData}}{{.}}<br>{{end}}</pre>
+                <pre>{{range .Version.StructuredData}}{{.}}<br>{{end}}</pre>
             </td>
         </tr>
     </table>
@@ -191,11 +195,11 @@
     <table class="table table-striped">
         <tr>
             <th>External Scripts</th>
-            <td>{{range .ExternalScripts}}<span>{{.}}</span><br>{{end}}</td>
+            <td>{{range .Version.ExternalScripts}}<span>{{.}}</span><br>{{end}}</td>
         </tr>
         <tr>
             <th>External Stylesheets</th>
-            <td>{{range .ExternalStylesheets}}<span>{{.}}</span><br>{{end}}</td>
+            <td>{{range .Version.ExternalStylesheets}}<span>{{.}}</span><br>{{end}}</td>
         </tr>
     </table>
 </div>

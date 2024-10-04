@@ -10,8 +10,8 @@ func (h *StructuredDataValidationHandler) SetNext(handler Handler) {
 	h.next = handler
 }
 
-func (h *StructuredDataValidationHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
-	if len(page.StructuredData) == 0 {
+func (h *StructuredDataValidationHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
+	if len(version.StructuredData) == 0 {
 		*improvements = append(*improvements, models.Improvement{
 			Name:     "Missing Structured Data",
 			Field:    "StructuredData",
@@ -21,7 +21,7 @@ func (h *StructuredDataValidationHandler) Handle(page *models.AnalysisData, impr
 		})
 	} else {
 		// Additional validation logic for structured data could be added here
-		for _, data := range page.StructuredDataTypes {
+		for _, data := range version.StructuredDataTypes {
 			if data == "" {
 				*improvements = append(*improvements, models.Improvement{
 					Name:     "Invalid Structured Data Type",
@@ -35,6 +35,6 @@ func (h *StructuredDataValidationHandler) Handle(page *models.AnalysisData, impr
 	}
 
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }

@@ -15,8 +15,8 @@ func (h *ImageAltTextHandler) SetNext(handler Handler) {
 }
 
 // Handle checks if each image has an alt text and suggests improvements if not
-func (h *ImageAltTextHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
-	for _, image := range page.Images {
+func (h *ImageAltTextHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
+	for _, image := range version.Images {
 		if image.Alt == "" {
 			*improvements = append(*improvements, models.Improvement{
 				Name:     "Missing Alt Text",
@@ -29,6 +29,6 @@ func (h *ImageAltTextHandler) Handle(page *models.AnalysisData, improvements *[]
 	}
 
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }

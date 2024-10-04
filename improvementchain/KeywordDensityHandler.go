@@ -18,17 +18,17 @@ func (h *KeywordDensityHandler) SetNext(handler Handler) {
 }
 
 // Handle calculates keyword density and appends improvement suggestions if necessary
-func (h *KeywordDensityHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
+func (h *KeywordDensityHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
 	// Extract the main keyword from the title by removing common stop words
-	mainKeyword := extractMainKeyword(page.Title)
+	mainKeyword := extractMainKeyword(version.Title)
 	if mainKeyword == "" {
 		if h.next != nil {
-			h.next.Handle(page, improvements)
+			h.next.Handle(version, improvements)
 		}
 		return
 	}
 
-	wordCount := page.WordCount
+	wordCount := version.WordCount
 	if wordCount == 0 {
 		*improvements = append(*improvements, models.Improvement{
 			Name:     "No Content Found",
@@ -38,27 +38,16 @@ func (h *KeywordDensityHandler) Handle(page *models.AnalysisData, improvements *
 			Status:   "pending",
 		})
 		if h.next != nil {
-			h.next.Handle(page, improvements)
+			h.next.Handle(version, improvements)
 		}
 		return
 	}
 
 	// Calculate how many times the main keyword appears in the content
 	keywordCount := 0
-	for _, wordPair := range page.CommonWords {
-		// Type assertion for wordPair values
-		word, ok := wordPair[0].(string)
-		if !ok {
-			continue // Skip this wordPair if type assertion fails
-		}
-
-		count, ok := wordPair[1].(int)
-		if !ok {
-			continue // Skip this wordPair if type assertion fails
-		}
-
+	for _, word := range version.CommonWords {
 		if isKeywordMatch(mainKeyword, word) {
-			keywordCount += count
+			keywordCount++
 		}
 	}
 
@@ -85,7 +74,7 @@ func (h *KeywordDensityHandler) Handle(page *models.AnalysisData, improvements *
 	}
 
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }
 

@@ -23,29 +23,36 @@ func HandlePageDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse the synthetic key to get extract_id and URL
-	extractID, url, err := utils.ParseKey(syntheticKey)
+	// Parse the synthetic key to get extractID and URL
+	extractID, urlStr, err := utils.ParseKey(syntheticKey)
 	if err != nil {
 		http.Error(w, "Invalid page key", http.StatusBadRequest)
 		return
 	}
 
 	// Log the parsed values for debugging
-	log.Printf("Parsed extractId: %s, URL: %s", extractID, url)
+	log.Printf("Parsed extractId: %s, URL: %s", extractID, urlStr)
 
 	// Connect to the MongoDB collection
-	collection := client.Database("brandAdherence").Collection("analysis")
+	collection := client.Database("brandAdherence").Collection("pages")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Fetch the page document by extractId and URL using projection to limit fields
-	var page models.AnalysisData
-	filter := bson.M{"extractId": extractID, "url": url}
-	projection := bson.M{"_id": 0} // Exclude internal MongoDB ID field
+	// Fetch the page document by URL and find the specific version using the extractID
+	var page models.Page
+	filter := bson.M{"url": urlStr}
+	projection := bson.M{
+		"_id": 0,
+		"url": 1,
+		"versions": bson.M{
+			"$elemMatch": bson.M{"extractId": extractID},
+		},
+	}
+
 	err = collection.FindOne(ctx, filter, options.FindOne().SetProjection(projection)).Decode(&page)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			log.Printf("Page not found for extractId: %s, URL: %s", extractID, url)
+			log.Printf("Page not found for extractId: %s, URL: %s", extractID, urlStr)
 			http.Error(w, "Page not found", http.StatusNotFound)
 		} else {
 			log.Printf("Error fetching page details from the database: %v", err)
@@ -53,6 +60,14 @@ func HandlePageDetails(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	if len(page.Versions) == 0 {
+		log.Println("Error: Specified version not found")
+		http.Error(w, "Specified version not found", http.StatusNotFound)
+		return
+	}
+
+	pageVersion := &page.Versions[0]
 
 	// Load and execute the HTML template
 	tmpl, err := template.ParseFiles("templates/page_detail.html")
@@ -62,8 +77,16 @@ func HandlePageDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Serve the template with the page data
-	if err := tmpl.Execute(w, page); err != nil {
+	data := struct {
+		PageURL string
+		Version *models.ExtractVersion
+	}{
+		PageURL: page.URL,
+		Version: pageVersion,
+	}
+
+	// Serve the template with the page version data
+	if err := tmpl.Execute(w, data); err != nil {
 		log.Printf("Error rendering HTML: %v", err)
 		http.Error(w, "Error rendering HTML", http.StatusInternalServerError)
 	}

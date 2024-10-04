@@ -11,8 +11,8 @@ func (h *BreadcrumbValidationHandler) SetNext(handler Handler) {
 	h.next = handler
 }
 
-func (h *BreadcrumbValidationHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
-	if len(page.Breadcrumbs) == 0 {
+func (h *BreadcrumbValidationHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
+	if len(version.Breadcrumbs) == 0 {
 		*improvements = append(*improvements, models.Improvement{
 			Name:     "Missing Breadcrumbs",
 			Field:    "Breadcrumbs",
@@ -23,6 +23,6 @@ func (h *BreadcrumbValidationHandler) Handle(page *models.AnalysisData, improvem
 	}
 
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }

@@ -11,8 +11,8 @@ func (h *MetaRobotsHandler) SetNext(handler Handler) {
 	h.next = handler
 }
 
-func (h *MetaRobotsHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
-	if page.RobotsMetaTag == "" {
+func (h *MetaRobotsHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
+	if version.RobotsMetaTag == "" {
 		*improvements = append(*improvements, models.Improvement{
 			Name:     "Missing Robots Meta Tag",
 			Field:    "RobotsMetaTag",
@@ -20,17 +20,17 @@ func (h *MetaRobotsHandler) Handle(page *models.AnalysisData, improvements *[]mo
 			NewValue: "Add a robots meta tag to control indexing (e.g., 'index, follow')",
 			Status:   "pending",
 		})
-	} else if page.RobotsMetaTag != "index, follow" {
+	} else if version.RobotsMetaTag != "index, follow" {
 		*improvements = append(*improvements, models.Improvement{
 			Name:     "Improper Robots Meta Tag",
 			Field:    "RobotsMetaTag",
-			OldValue: page.RobotsMetaTag,
+			OldValue: version.RobotsMetaTag,
 			NewValue: "Consider changing robots meta tag to 'index, follow' to allow indexing",
 			Status:   "pending",
 		})
 	}
 
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }

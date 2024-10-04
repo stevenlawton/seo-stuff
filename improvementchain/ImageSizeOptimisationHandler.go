@@ -14,16 +14,14 @@ func (h *ImageSizeOptimisationHandler) SetNext(handler Handler) {
 	h.next = handler
 }
 
-func (h *ImageSizeOptimisationHandler) Handle(page *models.AnalysisData, improvements *[]models.Improvement) {
-	for _, img := range page.Images {
-		width, _ := strconv.Atoi(img.Width)
-		height, _ := strconv.Atoi(img.Height)
+func (h *ImageSizeOptimisationHandler) Handle(version *models.ExtractVersion, improvements *[]models.Improvement) {
+	for _, img := range version.Images {
 
-		if width > 1920 || height > 1080 {
+		if img.Width > 1920 || img.Height > 1080 {
 			*improvements = append(*improvements, models.Improvement{
 				Name:     "Image Too Large",
 				Field:    "Images",
-				OldValue: "Image dimensions: " + img.Width + "x" + img.Height,
+				OldValue: "Image dimensions: " + strconv.Itoa(img.Width) + "x" + strconv.Itoa(img.Height),
 				NewValue: "Reduce image dimensions to 1920x1080 or less for optimal performance",
 				Status:   "pending",
 			})
@@ -31,6 +29,6 @@ func (h *ImageSizeOptimisationHandler) Handle(page *models.AnalysisData, improve
 	}
 
 	if h.next != nil {
-		h.next.Handle(page, improvements)
+		h.next.Handle(version, improvements)
 	}
 }
